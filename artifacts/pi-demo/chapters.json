@@ -1,0 +1,34 @@
+[
+  {
+    "time": 0,
+    "title": "01  Start in pi"
+  },
+  {
+    "time": 8,
+    "title": "02  Build a prompt for this buffer"
+  },
+  {
+    "time": 15.03,
+    "title": "03  Choose once, then focus on the fields"
+  },
+  {
+    "time": 29.65,
+    "title": "04  Move between fields without leaving Insert"
+  },
+  {
+    "time": 51.93,
+    "title": "05  Apply the complete prompt to pi's file"
+  },
+  {
+    "time": 58.93,
+    "title": "06  Save and return to pi"
+  },
+  {
+    "time": 69.06,
+    "title": "07  Submit the prompt"
+  },
+  {
+    "time": 75.56,
+    "title": "08  One round trip, ready to repeat"
+  }
+]

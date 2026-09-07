@@ -1,0 +1,541 @@
+# structured-prompt.nvim
+
+A structured prompt wizard for Neovim: pick a template in a tree-style sidebar,
+write each answer in a real Vim buffer, and return the assembled prompt to your
+original text buffer. You can also copy it or export a new Markdown buffer.
+
+[See the new pi round-trip demo](artifacts/pi-demo/README.md): start in pi,
+press `Ctrl+G`, choose a template, fill its fields, apply the prompt to the original
+Neovim buffer, then `:wq` and submit with `Enter`.
+The [earlier JSON configuration walkthrough](https://youtu.be/2tpgUYRdvzc)
+shows twelve templates, a CO-STAR brief, and adding templates and fields in JSON.
+
+Requires **Neovim 0.10+**. No plugin dependencies or Nerd Font required. Works with
+LazyVim, standalone lazy.nvim, and Neovim's built-in package loader.
+
+![Selected template showing only its fields and the apply-to-buffer action](artifacts/pi-demo/04-fields.png)
+
+## Try it here
+
+From this project directory:
+
+```sh
+make demo
+```
+
+This launches an isolated configuration, without changing your Neovim setup.
+It sets the local leader to `,`, so `,p` toggles preview, `,y` copies, and `,e`
+exports. Use `:qa!` to exit the demo.
+
+## Install
+
+GitHub publication is pending. Until the upload is complete, use the local
+development spec below with this checkout.
+
+### LazyVim or lazy.nvim
+
+In LazyVim, save this as `~/.config/nvim/lua/plugins/structured-prompt.lua`.
+For standalone lazy.nvim, add the same spec to your plugin list.
+
+```lua
+return {
+  "jkieley/neovim-structured-prompt-wizard",
+  name = "structured-prompt.nvim",
+  main = "structured_prompt",
+  cmd = {
+    "StructuredPrompt",
+    "StructuredPromptBuffer",
+    "StructuredPromptApply",
+    "StructuredPromptToggle",
+    "StructuredPromptReload",
+  },
+  keys = {
+    { "<leader>ap", "<cmd>StructuredPrompt<cr>", desc = "Structured prompt" },
+    { "<leader>aB", "<cmd>StructuredPromptBuffer<cr>", desc = "Build prompt for buffer" },
+    { "<leader>aP", "<cmd>StructuredPromptReload<cr>", desc = "Reload prompt templates" },
+  },
+  opts = {},
+}
+```
+
+Restart Neovim and run `:Lazy sync`. Then use `<leader>aB` from the text buffer
+that should receive your finished prompt, or run `:StructuredPromptBuffer`.
+The planned public repository is
+[jkieley/neovim-structured-prompt-wizard](https://github.com/jkieley/neovim-structured-prompt-wizard).
+
+The explicit `main` lets lazy.nvim call `require("structured_prompt").setup(opts)`.
+The spec follows [LazyVim's normal plugin configuration](https://www.lazyvim.org/configuration/plugins)
+and [lazy.nvim's plugin spec](https://lazy.folke.io/spec).
+All wizard mappings are buffer-local and have descriptions for which-key.
+The plugin uses your existing colorscheme, statusline, notifications, and window
+navigation. It neither installs nor reconfigures LazyVim plugins.
+
+To use the demo's `,` prefix, put this in LazyVim's
+`~/.config/nvim/lua/config/options.lua`, before the plugin loads:
+
+```lua
+vim.g.maplocalleader = ","
+```
+
+Otherwise use your existing `<LocalLeader>` in place of `,` in the examples.
+Neovim's default is `\`.
+
+For local development, replace the repository string in the spec with
+`dir = vim.fn.expand("~/git/neovim-structured-prompt-wizard")` and keep the other
+fields. Adjust the path to your checkout.
+
+### Standard Neovim
+
+Clone the public repository into Neovim's built-in package directory:
+
+```sh
+git clone https://github.com/jkieley/neovim-structured-prompt-wizard.git \
+  ~/.local/share/nvim/site/pack/plugins/start/structured-prompt.nvim
+```
+
+Then optionally configure it in `init.lua`:
+
+```lua
+vim.g.maplocalleader = ","
+require("structured_prompt").setup({})
+vim.keymap.set("n", "<leader>ap", "<cmd>StructuredPrompt<cr>", {
+  desc = "Structured prompt",
+})
+vim.keymap.set("n", "<leader>aB", "<cmd>StructuredPromptBuffer<cr>", {
+  desc = "Build prompt for buffer",
+})
+```
+
+The clone path assumes the standard Unix/macOS data directory; with a custom
+`XDG_DATA_HOME`, use `:echo stdpath('data')` followed by
+`/site/pack/plugins/start/structured-prompt.nvim` instead.
+`setup()` is optional when using defaults. No global key bindings are installed
+by the plugin itself.
+
+## Workflow
+
+1. Run `:StructuredPrompt`. A dedicated tab opens with the cursor on the first template.
+2. Move with `j` / `k` and press `<Enter>` to select a template. The template list
+   disappears and the sidebar shows only that template's fields. Use
+   `<LocalLeader>t` to return to the template picker.
+3. Press `i` to write the first answer. Each field is a separate multiline scratch
+   buffer with normal editing, registers, visual mode, and undo. Hints are virtual
+   placeholders on empty fields; they are never included in your prompt.
+4. Jump between fields with `]f` / `[f`, or use the insert-mode shortcuts below.
+   You can also select any field from the sidebar with `<Enter>`.
+5. Toggle the live preview, copy the prompt, or export it to a regular Markdown
+   buffer. Use `:write path.md` to save an export.
+
+`[x]` means a field contains text; `*` means it is required. Copy and export report
+missing required fields; applying to a buffer does the same. The preview remains
+available for incomplete drafts.
+Empty optional fields are omitted from the default Markdown output.
+
+Switching templates preserves each template's draft. Closing and reopening the
+wizard preserves drafts **in memory for the current Neovim session**. Nothing is
+sent to an AI service or saved automatically. Undo history and field cursors are
+retained while the wizard is open; drafts do not survive quitting Neovim.
+
+### Build a prompt for the current text buffer
+
+These key examples assume `,` is your local leader, as configured above.
+
+1. Open the text buffer that should receive the prompt. It may be an unnamed
+   buffer, an existing file, or the temporary file opened by another app.
+2. Run `:StructuredPromptBuffer` (or `:StructuredPromptBuffer co_star`).
+   The wizard opens in its own tab and remembers this original buffer.
+3. Choose a template and fill its fields. The sidebar shows fields after selection;
+   `,s` focuses them and `,t` returns to the template picker.
+4. Press `<Esc>`, then `,a`, or run `:StructuredPromptApply`.
+   The complete prompt **replaces all text in the original buffer**, closes the
+   wizard, and returns you to that buffer. This is a normal undoable buffer edit.
+5. Review the result. Use `:write` to save it, or `:wq` to save and quit.
+
+The wizard leaves the original buffer alone until you apply. It does not import
+existing prose into fields, save the file, quit Neovim, or submit to another app.
+If the original buffer changes while the wizard is open, applying is refused so
+both edits survive; use `,e` to export to a separate buffer. Read-only, unloaded,
+and special buffers are also protected. Close with `,q` to cancel the wizard.
+The apply action is available only when opened with `:StructuredPromptBuffer`.
+
+### Use with Pi's external editor
+
+Install the plugin in the Neovim configuration you normally use, then set Pi's
+external editor. Merge this property into `~/.pi/agent/settings.json`:
+
+```json
+{
+  "externalEditor": "nvim"
+}
+```
+
+Pi uses `externalEditor` first, then `$VISUAL`, then `$EDITOR`. If you have no
+`externalEditor` setting, a one-session alternative is:
+
+```sh
+VISUAL=nvim EDITOR=nvim pi
+```
+
+An existing `externalEditor` setting takes precedence over those environment
+variables. See Pi's [editor settings](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/settings.md)
+and [keybindings](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/keybindings.md).
+
+With `,` configured as the local leader, the complete round trip is:
+
+1. Start `pi` in your terminal and press **Ctrl+G** in its prompt input.
+2. Pi opens its draft in Neovim. Run `:StructuredPromptBuffer` or press
+   `<leader>aB` with the LazyVim spec above.
+3. Choose a template with `j` / `k` and `<Enter>`. Write with `i`; use
+   `<C-g><C-n>` in insert mode or `]f` in normal mode to reach the next field.
+4. Press `<Esc>`, then **`,a`** to put the complete prompt in Pi's original
+   temporary text buffer. Review or edit it with ordinary Vim commands.
+5. Run **`:wq`**. Pi reads the saved text back into its prompt input.
+6. Review it in Pi, then press **Enter** to submit it to your selected model.
+
+Saving and quitting returns text to Pi; submission happens only at the final
+Enter. To abandon the external edit, use `:cq` so Pi keeps its previous input.
+Start from an ordinary terminal Pi session; a Neovim terminal buffer is not a
+valid replacement target for `:StructuredPromptBuffer`.
+
+For an editor command that needs quoted arguments, use a wrapper executable:
+Pi 0.80.6 splits `externalEditor` on spaces, so shell quoting inside that setting
+is not sufficient. [examples/pi-editor](examples/pi-editor) starts your normal
+Neovim setup and opens the wizard automatically. Install it at a path with no
+spaces, for example `~/.local/bin/pi-prompt-editor`, make it executable, then
+set `externalEditor` to its **absolute path**, such as
+`/Users/yourname/.local/bin/pi-prompt-editor`. The wrapper passes Pi's temporary
+filename through unchanged. Remove `-c StructuredPromptBuffer` from the wrapper
+if you prefer to start the wizard manually.
+
+### Keys
+
+`<LocalLeader>` is your `maplocalleader` (Neovim defaults to `\`). Set it before
+opening the wizard if you prefer another prefix. The demo uses `,`.
+
+| Mode | Key | Action |
+| --- | --- | --- |
+| Normal, sidebar | `<Enter>` | Select template / edit field |
+| Normal | `]f` / `[f` | Next / previous field |
+| Insert | `<C-g><C-n>` / `<C-g><C-p>` | Next / previous field, keep insert mode |
+| Normal | `<LocalLeader>s` | Focus the current template's fields |
+| Normal | `<LocalLeader>t` | Show the template picker |
+| Normal | `<LocalLeader>p` | Toggle live preview below editor |
+| Normal | `<LocalLeader>y` | Copy prompt |
+| Normal | `<LocalLeader>e` | Export prompt to a regular Markdown buffer |
+| Normal, buffer workflow | `<LocalLeader>a` | Apply the full prompt to the original buffer |
+| Normal | `<LocalLeader>q` | Close wizard |
+| Normal, sidebar / preview | `q` | Close wizard |
+| Normal | `<C-w>h/j/k/l` | Standard window navigation |
+
+Navigation stops at the first/last field. `<Tab>`, `<Enter>`, and `<Esc>` retain
+their normal behavior in the editor; `q` still records macros there. Clipboard
+copy also fills the unnamed register. If Neovim has no clipboard provider,
+paste from the unnamed register using `p`.
+
+## Configure templates
+
+Templates and fields are loaded from [templates/prompts.json](templates/prompts.json).
+Edit JSON to add, reorder, or revise them; no Lua changes are needed. Run
+`:StructuredPrompt code` to go directly to a template; command completion lists IDs.
+
+The bundled catalog includes the original general task, code change, and review
+briefs, plus nine researched templates:
+
+| ID | Template |
+| --- | --- |
+| `co_star` | CO-STAR writing brief |
+| `few_shot` | Learn from examples |
+| `grounded_answer` | Answer from sources |
+| `structured_extraction` | Extract structured data |
+| `decision_matrix` | Compare options |
+| `debug_diagnosis` | Debug a failure |
+| `implementation_plan` | Plan an implementation |
+| `critique_revision` | Critique and revise |
+| `research_brief` | Research a topic |
+
+See [source notes and limitations](templates/SOURCES.md). These are original
+adaptations of documented methods, not claims of universal model performance.
+
+### Use a personal JSON catalog
+
+Keep a personal copy outside the plugin directory so plugin updates cannot
+overwrite your templates. From this checkout:
+
+```sh
+mkdir -p ~/.config/nvim/structured-prompt
+cp templates/prompts.json templates/schema.json ~/.config/nvim/structured-prompt/
+```
+
+For **plain Neovim**, set `templates_file` in your setup. This example opens the
+preview by default and gives the sidebar a little more room:
+
+```lua
+require("structured_prompt").setup({
+  templates_file = vim.fn.stdpath("config") .. "/structured-prompt/prompts.json",
+  sidebar_width = 38,
+  preview = true,
+})
+```
+
+For **LazyVim or lazy.nvim**, put those options in the plugin spec's `opts`.
+Save this as `~/.config/nvim/lua/plugins/structured-prompt.lua` in LazyVim:
+
+```lua
+return {
+  "jkieley/neovim-structured-prompt-wizard",
+  name = "structured-prompt.nvim",
+  main = "structured_prompt",
+  cmd = {
+    "StructuredPrompt",
+    "StructuredPromptBuffer",
+    "StructuredPromptApply",
+    "StructuredPromptToggle",
+    "StructuredPromptReload",
+  },
+  keys = {
+    { "<leader>ap", "<cmd>StructuredPrompt<cr>", desc = "Structured prompt" },
+    { "<leader>aB", "<cmd>StructuredPromptBuffer<cr>", desc = "Build prompt for buffer" },
+    { "<leader>aP", "<cmd>StructuredPromptReload<cr>", desc = "Reload prompt templates" },
+  },
+  opts = {
+    templates_file = vim.fn.stdpath("config") .. "/structured-prompt/prompts.json",
+    sidebar_width = 38,
+    preview = true,
+  },
+}
+```
+
+Ready-to-copy files:
+
+| Example | Use it for |
+| --- | --- |
+| [examples/lazyvim.lua](examples/lazyvim.lua) | A public-repository plugin spec with buffer, picker, and reload shortcuts |
+| [examples/init.lua](examples/init.lua) | Plain Neovim setup with `,` as the local leader |
+| [examples/pi-editor](examples/pi-editor) | A Pi editor wrapper that opens the wizard automatically |
+| [examples/pi-settings.json](examples/pi-settings.json) | The Pi setting for manual Neovim entry |
+| [examples/release-notes.json](examples/release-notes.json) | A complete custom catalog with a release-notes template, as shown in the video |
+
+If you copy `release-notes.json` outside this checkout, change its `$schema` to
+`"./schema.json"` and copy `templates/schema.json` beside it for editor validation.
+
+A custom file replaces the entire bundled catalog. To start with one template,
+copy [templates/example.json](templates/example.json) instead. The format is:
+
+```json
+{
+  "$schema": "./schema.json",
+  "version": 1,
+  "templates": [
+    {
+      "id": "my_task",
+      "name": "My task",
+      "instructions": "Create the requested deliverable within the stated constraints.",
+      "fields": [
+        {
+          "id": "task",
+          "label": "Task definition",
+          "hint": "What should be accomplished?",
+          "required": true
+        },
+        {
+          "id": "constraints",
+          "label": "Constraints",
+          "hint": "What rules or limits apply?"
+        },
+        {
+          "id": "output",
+          "label": "Expected output",
+          "default": "A concise Markdown response.\nInclude examples."
+        }
+      ]
+    }
+  ]
+}
+```
+
+Append another object to `templates` to add a prompt. Append an object to its
+`fields` to add an input; array order controls sidebar and output order.
+
+- Template IDs must be unique; field IDs must be unique within their template.
+  JSON IDs use lowercase snake_case. Keep IDs stable to retain session drafts.
+- `instructions` is an optional reusable preamble included in the prompt.
+- `hint` is an editor placeholder only. `default` is editable answer text and
+  **is** included in the output. Use `\n` for multiline JSON strings.
+- `required: true` blocks copy, export, and apply if the answer is blank.
+- Optional `description` and `sources: [{ "title": "…", "url": "https://…" }]`
+  describe the template; they are not included in the assembled prompt.
+- The optional `$schema` points to [schema.json](templates/schema.json) for editor
+  validation. The plugin validates locally without downloading a schema.
+
+JSON supports data only. For a custom renderer, use Lua configuration below.
+Set either `templates_file` or `templates`, never both. Relative file paths are
+resolved when configured and stay anchored after `:cd`; `~` is supported.
+
+### Add a field or a template
+
+To extend CO-STAR with **Success criteria**, append this object to that
+template's `fields` array, separated from the previous object by a comma:
+
+```json
+{
+  "id": "success",
+  "label": "Success criteria",
+  "hint": "What must the final answer include?"
+}
+```
+
+After saving and reloading, it becomes the seventh editable field. A filled
+answer appears under `## Success criteria` in the exported prompt. Add
+`"required": true` if it must be filled before copying, exporting, or applying.
+
+To add **Release notes** alongside the existing prompts, copy the object inside
+`templates` from [examples/release-notes.json](examples/release-notes.json) into
+your catalog's `templates` array. After saving and reloading, use
+`:StructuredPrompt release_notes` to open it directly. Copying the entire example
+file instead gives you a catalog containing only that template.
+
+### Reload and validate
+
+Save your JSON changes, then run:
+
+```vim
+:StructuredPromptReload
+```
+
+The file is reread and fully validated before the wizard changes. On an error,
+the existing wizard and drafts remain intact. A successful reload updates the
+sidebar and retains answers and the selected field by matching IDs. New fields
+use their defaults; existing drafts take precedence over changed defaults. If
+the selected template was removed, the wizard returns to the template picker.
+Reload rebuilds editor buffers, so undo history and cursor positions reset.
+Files are not watched automatically.
+
+From the checkout, validate a catalog with the plugin's loader and renderer:
+
+```sh
+make validate-templates
+make validate-templates TEMPLATES="$HOME/.config/nvim/structured-prompt/prompts.json"
+```
+
+The [Structured Prompt Author skill](skills/structured-prompt-author/SKILL.md)
+documents how to add fields, research primary sources, record provenance, and
+validate templates. With the skill installed, ask Codex:
+
+> Use $structured-prompt-author to add a template for writing release notes.
+
+For another Codex installation, link this checkout's
+`skills/structured-prompt-author` directory into
+`${CODEX_HOME:-$HOME/.codex}/skills/structured-prompt-author`.
+
+### Lua configuration
+
+Lua templates remain supported, including optional custom renderers:
+
+```lua
+require("structured_prompt").setup({
+  sidebar_width = 34,
+  preview = false,
+  field_filetype = "markdown",
+  templates = {
+    {
+      id = "my_task",
+      name = "My task",
+      instructions = "Create a useful deliverable from the brief below.",
+      fields = {
+        { id = "task", label = "Task definition", required = true },
+        { id = "output", label = "Expected output", default = "A concise Markdown response." },
+      },
+      -- Optional: receive field strings keyed by ID and return one string.
+      -- render = function(values, template)
+      --   return "Task:\n" .. values.task .. "\n\nOutput:\n" .. values.output
+      -- end,
+    },
+  },
+})
+```
+
+With lazy.nvim / LazyVim, put options inside the spec's `opts` instead of calling
+`setup()` separately. To extend the bundled JSON catalog from Lua:
+
+```lua
+opts = function()
+  local templates = vim.deepcopy(require("structured_prompt.config").defaults.templates)
+  templates[#templates + 1] = {
+    id = "brief",
+    name = "Quick brief",
+    fields = { { id = "task", label = "Task", required = true } },
+  }
+  return { templates = templates }
+end
+```
+
+The default renderer emits the optional instructions followed by `## Field label`
+sections in field order and preserves multiline text. Custom
+`render(values, template)` functions control the entire output, including any
+instructions. They must return a string and should be fast and free of side
+effects: preview invokes them as text changes. Required-field checks still apply.
+For Lua templates, reload reapplies the options from the last `setup()`; call
+`setup()` again to change those options.
+
+### Remap actions
+
+Override individual mappings or set an action to `false` to disable it:
+
+```lua
+require("structured_prompt").setup({
+  keymaps = {
+    next_field = "]f",
+    prev_field = "[f",
+    next_field_insert = "<C-g><C-n>",
+    prev_field_insert = "<C-g><C-p>",
+    sidebar = "<localleader>s",
+    templates = "<localleader>t",
+    preview = "<localleader>p",
+    copy = "<localleader>y",
+    export = "<localleader>e",
+    apply = "<localleader>a",
+    close = "<localleader>q",
+  },
+})
+```
+
+`<Enter>` and `q` in non-editing panes are fixed navigation bindings. Avoid
+assigning other actions to them. Calling `setup()` again closes the current
+wizard and applies options to the next opening, retaining drafts by ID.
+
+## API and development
+
+```lua
+local prompt = require("structured_prompt")
+prompt.open()          -- Open or focus the wizard
+prompt.open("code")    -- Open a particular template
+prompt.open_buffer()   -- Build a prompt to replace the current text buffer
+prompt.open_buffer("co_star") -- Start a specific template for this buffer
+prompt.apply()         -- Apply to its original buffer; true on success
+prompt.toggle()
+prompt.close()
+prompt.template_ids()  -- Configured IDs in order
+prompt.get_values()    -- Copy of current field strings; nil if none selected
+prompt.reload()        -- Reread JSON; true on success, false + error on failure
+```
+
+`:StructuredPromptToggle` toggles the wizard. `:help structured-prompt` contains
+the in-editor reference. With manual installation, generate help tags using
+`:helptags ALL` if needed.
+
+```sh
+make test             # Dependency-free, headless Neovim integration suite
+make demo             # Interactive isolated configuration
+make validate-templates # Validate bundled JSON and render every template
+```
+
+CI runs on Neovim 0.10.4, stable, and nightly. The suite covers configuration,
+multiline rendering, normal/insert navigation, independent undo, draft retention,
+validation, custom rendering, clipboard/export, window cleanup, JSON loading,
+safe reloads, changing fields, large catalogs, hiding the template picker,
+and applying to the original buffer without overwriting intervening edits.
+
+Implementation: `catalog.lua` loads and validates JSON, `config.lua` resolves
+options, `render.lua` handles output, and `ui.lua` owns windows and session drafts.
+Templates live on disk; draft answers stay in memory. No networking or model
+integration is included.

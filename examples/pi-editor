@@ -1,0 +1,6 @@
+#!/bin/sh
+# Install this executable at a path with no spaces, and set Pi's externalEditor
+# to its absolute path. The plugin must be installed in your Neovim config.
+# Pi appends its draft filename; "$@" preserves the filename as one argument.
+# Remove -c StructuredPromptBuffer to open the text buffer before the wizard.
+exec nvim -c StructuredPromptBuffer "$@"

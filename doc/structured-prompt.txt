@@ -1,0 +1,191 @@
+*structured-prompt.txt*  Structured prompt wizard for Neovim 0.10+
+
+==============================================================================
+INTRODUCTION                                           *structured-prompt*
+
+Pick a template from the left sidebar, edit its fields in multiline Vim
+buffers, and apply, copy, or export the assembled prompt. No dependencies
+required.
+
+COMMANDS                                               *structured-prompt-commands*
+
+:StructuredPrompt [id]  Open the wizard, optionally at a specific template.
+                        Without an ID, focus the current sidebar.
+:StructuredPromptBuffer [id]
+                        Open from a normal writable buffer. Apply replaces the
+                        full contents of this same buffer when you finish.
+:StructuredPromptApply  Apply the prompt to its originating buffer and close.
+                        Requires a wizard opened with :StructuredPromptBuffer.
+:StructuredPromptToggle Toggle the wizard.
+:StructuredPromptReload Reread and validate the configured JSON catalog.
+
+The wizard opens a dedicated tab. Press <Enter> on a template to select it,
+then i to edit. The template list is replaced by the selected template's fields.
+Each answer has its own buffer and undo history. Select a field in the sidebar
+to jump directly to it. Blank fields show virtual hints. Press <LocalLeader>t
+or <Enter> on "Change template" to return to the template picker. Field drafts
+remain available when changing templates.
+
+MAPS                                                   *structured-prompt-maps*
+
+Normal mode:
+    ]f / [f             Next / previous field (no wrap).
+    <LocalLeader>s      Focus the sidebar.
+    <LocalLeader>t      Show the template picker.
+    <LocalLeader>p      Toggle live preview.
+    <LocalLeader>y      Copy to clipboard and unnamed register.
+    <LocalLeader>e      Export to a normal Markdown buffer; :write to save.
+    <LocalLeader>a      Apply to the original buffer (buffer mode only).
+    <LocalLeader>q      Close the wizard.
+    <CR>                Sidebar: select template or field.
+    q                   Sidebar/preview: close. Editor: normal macro recording.
+
+Insert mode:
+    <C-g><C-n>          Next field, stay in insert mode.
+    <C-g><C-p>          Previous field, stay in insert mode.
+
+Window navigation uses normal <C-w> commands. <Tab> is not remapped.
+<LocalLeader> defaults to backslash; see |maplocalleader|.
+All maps are buffer-local. Each action can be remapped or disabled with false.
+
+BUFFER WORKFLOW                                        *structured-prompt-buffer*
+
+From the text buffer you want to replace, run :StructuredPromptBuffer. Choose
+a template, fill its fields, then use <LocalLeader>a or :StructuredPromptApply.
+The complete prompt replaces that buffer in one undoable edit and the wizard
+closes. The buffer keeps its name and filetype; no file is written automatically.
+Press u to undo (when undo is enabled), :write to save, or :wq to save and exit.
+Closing the wizard without applying leaves the originating buffer unchanged.
+
+For pi's external editor, set VISUAL=nvim and EDITOR=nvim, press Ctrl+G in pi's
+prompt editor, then run :StructuredPromptBuffer in the temporary file Neovim
+opens. Build the prompt, apply, and :wq. The assembled text returns to pi's
+prompt editor, where you can review it and press Enter to submit. See README.md
+for LazyVim installation and complete shell examples.
+
+The target is the original buffer's identity, even if its window is reused or
+the JSON catalog is reloaded. Apply is refused if that buffer was deleted,
+unloaded, edited since launch, made readonly/nonmodifiable, or changed into a
+special buffer. The wizard and draft remain open so you can copy or export
+instead. Reopening buffer mode does not silently switch to a different target.
+Existing buffer text is not parsed into fields; those use defaults or drafts.
+
+:StructuredPrompt retains its copy/export workflow and does not enable Apply.
+Close it first, then start :StructuredPromptBuffer from the intended buffer.
+
+CONFIGURATION                                          *structured-prompt-config*
+>
+    require("structured_prompt").setup({
+      sidebar_width = 34,
+      preview = false,
+      field_filetype = "markdown",
+      keymaps = { next_field = "]f", prev_field = "[f" },
+    })
+<
+setup() is optional. With lazy.nvim set main = "structured_prompt" and pass
+configuration as opts. See README.md for complete installation examples.
+
+The bundled list is loaded from templates/prompts.json in the plugin directory.
+It includes general, code, review, co_star, few_shot, grounded_answer,
+structured_extraction, decision_matrix, debug_diagnosis, implementation_plan,
+critique_revision, and research_brief. See templates/SOURCES.md for provenance.
+
+Use a personal JSON file to keep changes separate from plugin updates:
+>
+    require("structured_prompt").setup({
+      templates_file = vim.fn.stdpath("config") .. "/structured-prompt/prompts.json",
+    })
+<
+Copy templates/prompts.json and templates/schema.json into that directory, or
+use templates/example.json for a small starting catalog. A custom file replaces
+the entire bundled list. The envelope is:
+>
+    {
+      "version": 1,
+      "templates": [
+        {
+          "id": "brief",
+          "name": "Quick brief",
+          "instructions": "Complete the task using the provided facts.",
+          "fields": [
+            { "id": "task", "label": "Task", "required": true },
+            { "id": "output", "label": "Output", "default": "Markdown" }
+          ]
+        }
+      ]
+    }
+<
+Add objects to templates or fields to add prompts or inputs. Array order controls
+the sidebar and rendered sections. Use escaped \n inside multiline JSON strings.
+IDs must use lowercase snake_case and be unique among templates or within one
+template's fields. Unknown properties and invalid types are reported as errors.
+The optional "$schema": "./schema.json" enables editor schema validation when
+the schema is in the same directory; the plugin does not download schemas.
+
+Alternatively, pass templates as a Lua list. Set either templates_file or
+templates, never both. Relative paths are resolved when configured and remain
+anchored after :cd. A leading ~ is expanded.
+
+Each template has:
+    id          Unique, stable string identifying this template's draft.
+    name        Sidebar display name.
+    description Optional description; excluded from output.
+    instructions Optional reusable directions prepended to field sections.
+    fields      Nonempty ordered list of field definitions.
+    sources     Optional list of {title, url} provenance objects. Excluded from
+                output. URLs must begin with http:// or https://.
+    render      Lua only: optional function(values, template) returning a string.
+
+Each field has:
+    id          Unique string within the template.
+    label       Heading used in the editor and default Markdown renderer.
+    hint        Optional virtual placeholder for an empty field.
+    default     Optional initial string, including newlines.
+    required    Optional boolean; defaults to false.
+
+Renderer values are strings keyed by field ID. Empty optional sections are
+omitted by the default renderer. Required fields block apply/copy/export when
+blank.
+Custom renderers control the entire output, including any instructions. They run
+during live preview and should have no side effects. JSON cannot contain code.
+
+Save changes to JSON, then use :StructuredPromptReload. Validation happens before
+the wizard changes; failures preserve the current wizard and drafts. Successful
+reloads retain field values and the selected template/field by matching IDs.
+New fields use defaults; existing drafts take precedence over changed defaults.
+A removed selection returns to the picker. Undo history and cursors reset when
+reload rebuilds the buffers. There is no automatic file watcher. With Lua
+templates, reload reapplies the last setup options; use setup() to change them.
+
+Validate from the plugin checkout with make validate-templates, or pass a custom
+path using make validate-templates TEMPLATES=/absolute/path/to/prompts.json.
+The skills/structured-prompt-author/SKILL.md guide covers template authoring.
+
+The complete keymaps table accepts next_field, prev_field, next_field_insert,
+prev_field_insert, sidebar, templates, preview, copy, export, apply, and close.
+Set an action to false to disable its mapping. Sidebar <CR> and non-editor q
+are fixed bindings.
+
+DRAFTS                                                 *structured-prompt-drafts*
+
+Drafts are kept in memory by template/field ID across closing, reopening, and
+switching templates. They are lost when Neovim exits. Export before quitting
+to keep a draft on disk. The plugin does not contact any external service.
+Undo history and cursor positions survive field switches while the wizard is
+open. Without a system clipboard provider, copy uses the unnamed register.
+
+API                                                    *structured-prompt-api*
+>
+    local prompt = require("structured_prompt")
+    prompt.open()              -- Open, or focus the current sidebar
+    prompt.open("general")     -- Select template by ID
+    prompt.open_buffer()       -- Start buffer mode; true or false plus error
+    prompt.open_buffer("code") -- Start buffer mode at a particular template
+    prompt.apply()             -- true on success; false on validation failure
+    prompt.close()
+    prompt.toggle()
+    prompt.template_ids()      -- Ordered list of configured IDs
+    prompt.get_values()        -- Copy of selected draft, or nil
+    prompt.reload()            -- true, or false plus an error message
+<
+vim:tw=78:ts=8:noet:ft=help:norl:

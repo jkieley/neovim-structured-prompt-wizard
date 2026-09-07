@@ -1,0 +1,15 @@
+An updated walkthrough of structured-prompt.nvim, a native Neovim prompt wizard with twelve JSON-configured templates.
+
+Fill a CO-STAR writing brief with multiline Vim buffers, browse evidence-based and coding prompts, edit a personal JSON catalog, add a field and a release-notes template, reload while retaining drafts, and copy or export the assembled Markdown prompt.
+
+0:00 Choose from twelve templates
+0:18 Fill a CO-STAR brief with Vim navigation
+0:39 Evidence, debugging, and research prompts
+1:02 Configure a personal JSON catalog
+1:16 Add a field and reload without losing drafts
+1:38 Add a release-notes template
+1:57 Copy and export Markdown
+
+Compatible with Neovim 0.10+ and LazyVim. No plugin dependencies. The demo uses an isolated Neovim 0.12.2 session, rendered from real UI events and driven by scripted keystrokes and pastes. On-screen captions; no narration. The wizard assembles prompts and does not call an AI service.
+
+The bundled catalog starts with twelve prompts. The thirteenth release-notes entry and seventh CO-STAR field are added to a separate demo catalog during this video.

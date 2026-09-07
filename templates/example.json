@@ -1,0 +1,31 @@
+{
+  "$schema": "./schema.json",
+  "version": 1,
+  "templates": [
+    {
+      "id": "writing_brief",
+      "name": "Writing brief",
+      "description": "Turn an objective and constraints into a clear deliverable.",
+      "instructions": "Create the deliverable described below. Follow the constraints and identify any essential missing information.",
+      "fields": [
+        {
+          "id": "task",
+          "label": "Task definition",
+          "hint": "What should this piece accomplish, and who is it for?",
+          "required": true
+        },
+        {
+          "id": "constraints",
+          "label": "Constraints",
+          "hint": "Specify scope, tone, facts to preserve, and length."
+        },
+        {
+          "id": "output",
+          "label": "Expected output",
+          "default": "A concise Markdown document.\nInclude a descriptive title.",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

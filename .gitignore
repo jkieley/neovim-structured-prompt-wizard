@@ -1,0 +1,11 @@
+*.swp
+*.swo
+.DS_Store
+doc/tags
+artifacts/demo/frames/
+artifacts/demo/frames.ffconcat
+artifacts/demo/*.mp4
+artifacts/pi-demo/frames/
+artifacts/pi-demo/frames.ffconcat
+artifacts/pi-demo/*.mp4
+__pycache__/

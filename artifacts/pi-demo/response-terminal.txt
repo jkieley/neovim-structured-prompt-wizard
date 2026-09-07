@@ -1,0 +1,26 @@
+
+
+ Task definition
+
+ Write a short welcome for a structured prompt wizard.
+ Explain how it helps Neovim users turn an idea into a clear request.
+
+ Constraints
+
+ Address Neovim and LazyVim users.
+ Stay under 90 words. Do not use tools or edit files.
+
+ Expected output
+
+ Three concise bullets: choose a template, fill the fields, submit the prompt.
+
+
+ - Choose a template tailored for Neovim or LazyVim tasks.
+ - Fill in the fields to turn your idea into a clear, complete request.
+ - Submit the prompt and get focused help for your configuration or workflow.
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+/private/tmp/structured-prompt-pi-8rfy7ad9/prompt-demo
+↑138 ↓51 $0.001 (sub) 0.1%/372k (auto)                                                    (openai-codex) gpt-5.6-terra • low

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Structured Prompt Author"
+  short_description: "Add researched templates to the Neovim prompt wizard"
+  default_prompt: "Use $structured-prompt-author to add a well-sourced template to my Neovim structured prompt catalog."

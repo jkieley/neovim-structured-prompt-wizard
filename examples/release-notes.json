@@ -1,0 +1,34 @@
+{
+  "$schema": "../templates/schema.json",
+  "version": 1,
+  "templates": [
+    {
+      "id": "release_notes",
+      "name": "Release notes",
+      "instructions": "Write release notes from the supplied changes. Explain the user-visible benefits and any migration steps. Do not invent features or compatibility claims.",
+      "fields": [
+        {
+          "id": "changes",
+          "label": "Changes",
+          "hint": "Paste the changes included in this release.",
+          "required": true
+        },
+        {
+          "id": "audience",
+          "label": "Audience",
+          "default": "Existing users considering an upgrade."
+        },
+        {
+          "id": "migration",
+          "label": "Migration steps",
+          "hint": "Describe breaking changes, upgrade steps, or known issues."
+        },
+        {
+          "id": "output",
+          "label": "Output format",
+          "default": "Markdown sections: Highlights, Changes, and Upgrading."
+        }
+      ]
+    }
+  ]
+}

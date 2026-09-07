@@ -1,0 +1,29 @@
+Build a structured prompt in Neovim, directly from pi's external editor.
+
+An actual pi session opens Neovim with Ctrl+G. The structured-prompt.nvim wizard
+offers twelve configurable templates, hides the catalog after selection, and
+provides multiline Vim buffers for each answer. Apply returns the full Markdown
+prompt to pi's original editor file. Save with :wq, then press Enter in pi to
+submit it. The final model response is real.
+
+Source and LazyVim installation:
+https://github.com/jkieley/neovim-structured-prompt-wizard
+
+0:00 Start in pi and open Neovim
+0:15 Choose a template and fill the fields
+0:29 Navigate multiline inputs
+0:51 Apply to the original buffer
+1:09 Submit the prompt in pi
+
+Keys: Ctrl+G in pi, :StructuredPromptBuffer in Neovim, i to edit,
+Ctrl+G then Ctrl+N for the next field, Esc then ,a to apply, :wq to return,
+Enter in pi to submit. Comma is this demo's LocalLeader.
+
+Neovim 0.10+; dependency-free; compatible with LazyVim and plain Neovim.
+Templates and fields are JSON-configurable. The repo includes examples and a
+Structured Prompt Author skill for researching and adding templates.
+
+Earlier JSON configuration walkthrough: https://youtu.be/2tpgUYRdvzc
+
+Recorded using an isolated real tmux terminal with scripted keystrokes. Captions
+and terminal cells are rendered at 1080p. pi 0.80.6; Neovim 0.12.2.
