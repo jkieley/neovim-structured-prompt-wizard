@@ -12,11 +12,12 @@ LazyVim, standalone lazy.nvim, and Neovim's built-in package loader.
 
 ## Video walkthrough
 
-[![Watch the YouTube walkthrough: build a structured prompt in Neovim and submit it from pi](artifacts/pi-demo/04-fields.png)](https://youtu.be/JVMYZFYO_FA)
+[![▶ Play the pi → Neovim → pi walkthrough on YouTube](https://i.ytimg.com/vi/JVMYZFYO_FA/maxresdefault.jpg)](https://www.youtube.com/watch?v=JVMYZFYO_FA)
 
-**[▶ Watch the 1:24 pi → Neovim → pi walkthrough on YouTube](https://youtu.be/JVMYZFYO_FA)**
+**[Watch the 1:24 pi → Neovim → pi walkthrough directly on YouTube](https://www.youtube.com/watch?v=JVMYZFYO_FA)**
 
-Click the preview above to play the video on YouTube. It shows a real pi terminal
+GitHub sanitizes YouTube iframe embeds in README files, so the preview above is a
+clickable thumbnail that opens the published video. It shows a real pi terminal
 session: press `Ctrl+G`, choose a template, fill its fields, apply the assembled
 prompt to the original Neovim buffer, then `:wq` and submit with `Enter`.
 See the [demo notes, chapters, and screenshots](artifacts/pi-demo/README.md).
