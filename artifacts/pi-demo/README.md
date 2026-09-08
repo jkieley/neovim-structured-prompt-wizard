@@ -5,8 +5,9 @@ process launched by its external editor. Scripted keystrokes drive the real apps
 the captured terminal cells are rendered as a 1920×1080 H.264 video with captions.
 The final response comes from an actual model submission in pi.
 
-The generated video is `structured-prompt-pi-demo.mp4` in this directory.
-Video and frame caches are excluded from Git. YouTube publication is pending.
+[Watch the 1:24 video on YouTube](https://youtu.be/JVMYZFYO_FA) (unlisted).
+The generated local video is `structured-prompt-pi-demo.mp4` in this directory.
+Video and frame caches are excluded from Git.
 
 | Time | Action |
 | --- | --- |

@@ -4,9 +4,10 @@ A structured prompt wizard for Neovim: pick a template in a tree-style sidebar,
 write each answer in a real Vim buffer, and return the assembled prompt to your
 original text buffer. You can also copy it or export a new Markdown buffer.
 
-[See the new pi round-trip demo](artifacts/pi-demo/README.md): start in pi,
+[Watch the new 1:24 pi round-trip demo](https://youtu.be/JVMYZFYO_FA): start in pi,
 press `Ctrl+G`, choose a template, fill its fields, apply the prompt to the original
 Neovim buffer, then `:wq` and submit with `Enter`.
+See the [demo notes and screenshots](artifacts/pi-demo/README.md).
 The [earlier JSON configuration walkthrough](https://youtu.be/2tpgUYRdvzc)
 shows twelve templates, a CO-STAR brief, and adding templates and fields in JSON.
 
@@ -28,9 +29,6 @@ It sets the local leader to `,`, so `,p` toggles preview, `,y` copies, and `,e`
 exports. Use `:qa!` to exit the demo.
 
 ## Install
-
-GitHub publication is pending. Until the upload is complete, use the local
-development spec below with this checkout.
 
 ### LazyVim or lazy.nvim
 
@@ -60,7 +58,7 @@ return {
 
 Restart Neovim and run `:Lazy sync`. Then use `<leader>aB` from the text buffer
 that should receive your finished prompt, or run `:StructuredPromptBuffer`.
-The planned public repository is
+The public repository is
 [jkieley/neovim-structured-prompt-wizard](https://github.com/jkieley/neovim-structured-prompt-wizard).
 
 The explicit `main` lets lazy.nvim call `require("structured_prompt").setup(opts)`.
