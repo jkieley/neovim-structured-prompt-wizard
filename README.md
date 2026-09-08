@@ -12,7 +12,7 @@ LazyVim, standalone lazy.nvim, and Neovim's built-in package loader.
 
 ## Video walkthrough
 
-[![▶ Play the pi → Neovim → pi walkthrough on YouTube](https://i.ytimg.com/vi/JVMYZFYO_FA/maxresdefault.jpg)](https://www.youtube.com/watch?v=JVMYZFYO_FA)
+[![▶ Play the pi → Neovim → pi walkthrough on YouTube](artifacts/pi-demo/youtube-preview.jpg)](https://www.youtube.com/watch?v=JVMYZFYO_FA)
 
 **[Watch the 1:24 pi → Neovim → pi walkthrough directly on YouTube](https://www.youtube.com/watch?v=JVMYZFYO_FA)**
 
