@@ -4,17 +4,25 @@ A structured prompt wizard for Neovim: pick a template in a tree-style sidebar,
 write each answer in a real Vim buffer, and return the assembled prompt to your
 original text buffer. You can also copy it or export a new Markdown buffer.
 
-[Watch the new 1:24 pi round-trip demo](https://youtu.be/JVMYZFYO_FA): start in pi,
-press `Ctrl+G`, choose a template, fill its fields, apply the prompt to the original
-Neovim buffer, then `:wq` and submit with `Enter`.
-See the [demo notes and screenshots](artifacts/pi-demo/README.md).
-The [earlier JSON configuration walkthrough](https://youtu.be/2tpgUYRdvzc)
-shows twelve templates, a CO-STAR brief, and adding templates and fields in JSON.
-
 Requires **Neovim 0.10+**. No plugin dependencies or Nerd Font required. Works with
 LazyVim, standalone lazy.nvim, and Neovim's built-in package loader.
 
-![Selected template showing only its fields and the apply-to-buffer action](artifacts/pi-demo/04-fields.png)
+[Install](#install) · [Workflow](#workflow) · [Pi integration](#use-with-pis-external-editor) ·
+[Key bindings](#keys) · [JSON configuration](#use-a-personal-json-catalog)
+
+## Video walkthrough
+
+[![Watch the YouTube walkthrough: build a structured prompt in Neovim and submit it from pi](artifacts/pi-demo/04-fields.png)](https://youtu.be/JVMYZFYO_FA)
+
+**[▶ Watch the 1:24 pi → Neovim → pi walkthrough on YouTube](https://youtu.be/JVMYZFYO_FA)**
+
+Click the preview above to play the video on YouTube. It shows a real pi terminal
+session: press `Ctrl+G`, choose a template, fill its fields, apply the assembled
+prompt to the original Neovim buffer, then `:wq` and submit with `Enter`.
+See the [demo notes, chapters, and screenshots](artifacts/pi-demo/README.md).
+
+The **[JSON configuration walkthrough](https://youtu.be/2tpgUYRdvzc)** shows all
+twelve templates, a CO-STAR brief, and adding templates and fields through JSON.
 
 ## Try it here
 
@@ -30,10 +38,10 @@ exports. Use `:qa!` to exit the demo.
 
 ## Install
 
-### LazyVim or lazy.nvim
+### lazy.nvim and LazyVim
 
-In LazyVim, save this as `~/.config/nvim/lua/plugins/structured-prompt.lua`.
-For standalone lazy.nvim, add the same spec to your plugin list.
+Save this spec as `~/.config/nvim/lua/plugins/structured-prompt.lua`. It works with
+both [lazy.nvim](https://lazy.folke.io/) and [LazyVim](https://www.lazyvim.org/):
 
 ```lua
 return {
@@ -56,10 +64,33 @@ return {
 }
 ```
 
-Restart Neovim and run `:Lazy sync`. Then use `<leader>aB` from the text buffer
-that should receive your finished prompt, or run `:StructuredPromptBuffer`.
-The public repository is
-[jkieley/neovim-structured-prompt-wizard](https://github.com/jkieley/neovim-structured-prompt-wizard).
+**LazyVim:** files under `lua/plugins/` are imported automatically. Save the spec,
+restart Neovim, and run `:Lazy sync`.
+
+**Standalone lazy.nvim:** make sure your existing `require("lazy").setup(...)`
+imports the `plugins` directory. For example, after lazy.nvim's bootstrap:
+
+```lua
+require("lazy").setup({
+  spec = {
+    { import = "plugins" },
+    -- Keep your other plugin specs and imports here.
+  },
+})
+```
+
+Add that import to your existing setup rather than adding a second setup call.
+If you keep all plugins in one file, insert the table from the first example
+directly into your existing plugin list instead. If you haven't installed
+lazy.nvim yet, follow its [bootstrap instructions](https://lazy.folke.io/installation)
+first. See also [organizing plugin specs](https://lazy.folke.io/usage/structuring).
+Restart Neovim and run `:Lazy sync`.
+
+Open any ordinary text buffer, then run **`:StructuredPromptBuffer`** or press
+**`<leader>aB`** to build a prompt for it. Use **`:StructuredPrompt`** or
+**`<leader>ap`** when you only want to copy or export a prompt. With
+[LazyVim's default leader](https://www.lazyvim.org/configuration/general),
+`<leader>aB` means `Space`, `a`, then uppercase `B`.
 
 The explicit `main` lets lazy.nvim call `require("structured_prompt").setup(opts)`.
 The spec follows [LazyVim's normal plugin configuration](https://www.lazyvim.org/configuration/plugins)
@@ -68,8 +99,9 @@ All wizard mappings are buffer-local and have descriptions for which-key.
 The plugin uses your existing colorscheme, statusline, notifications, and window
 navigation. It neither installs nor reconfigures LazyVim plugins.
 
-To use the demo's `,` prefix, put this in LazyVim's
-`~/.config/nvim/lua/config/options.lua`, before the plugin loads:
+To use the demo's `,` prefix, set `maplocalleader` before the plugin loads. In
+LazyVim, put this in `~/.config/nvim/lua/config/options.lua`; with standalone
+lazy.nvim, put it in `init.lua` before `require("lazy").setup(...)`:
 
 ```lua
 vim.g.maplocalleader = ","
@@ -111,6 +143,17 @@ The clone path assumes the standard Unix/macOS data directory; with a custom
 by the plugin itself.
 
 ## Workflow
+
+The wizard starts with a vertical list of templates. Selecting one hides that
+list and reveals its input fields. Each answer has its own multiline Vim buffer;
+the wizard assembles those answers into one prompt in field order. Choose the
+command that matches where you want the result:
+
+| Start with | Finish with | Result |
+| --- | --- | --- |
+| `:StructuredPrompt` | `<LocalLeader>y` | Copy the assembled prompt |
+| `:StructuredPrompt` | `<LocalLeader>e` | Open the prompt in a new Markdown buffer |
+| `:StructuredPromptBuffer` | `<LocalLeader>a` | Replace the original text buffer with the prompt |
 
 1. Run `:StructuredPrompt`. A dedicated tab opens with the cursor on the first template.
 2. Move with `j` / `k` and press `<Enter>` to select a template. The template list
@@ -241,6 +284,9 @@ briefs, plus nine researched templates:
 
 | ID | Template |
 | --- | --- |
+| `general` | General task: task definition, constraints, and expected output |
+| `code` | Code change |
+| `review` | Review brief |
 | `co_star` | CO-STAR writing brief |
 | `few_shot` | Learn from examples |
 | `grounded_answer` | Answer from sources |
@@ -257,51 +303,66 @@ adaptations of documented methods, not claims of universal model performance.
 ### Use a personal JSON catalog
 
 Keep a personal copy outside the plugin directory so plugin updates cannot
-overwrite your templates. From this checkout:
+overwrite your templates. You can copy the installed catalog without cloning
+this repository separately:
 
-```sh
-mkdir -p ~/.config/nvim/structured-prompt
-cp templates/prompts.json templates/schema.json ~/.config/nvim/structured-prompt/
+1. Run `:StructuredPrompt` once to load the plugin, then close it with
+   `<LocalLeader>q`.
+2. Paste the following Lua into a temporary buffer and run `:luafile %` after
+   saving it. This copies the bundled catalog and schema to your Neovim config
+   directory, keeping any personal files that already exist.
+
+```lua
+local source = vim.fs.dirname(require("structured_prompt.catalog").bundled_path)
+local target = vim.fn.stdpath("config") .. "/structured-prompt"
+vim.fn.mkdir(target, "p")
+for _, filename in ipairs({ "prompts.json", "schema.json" }) do
+  local destination = target .. "/" .. filename
+  if not (vim.uv or vim.loop).fs_stat(destination) then
+    assert(vim.fn.writefile(vim.fn.readfile(source .. "/" .. filename), destination) == 0)
+  end
+end
+print("Prompt catalog: " .. target .. "/prompts.json")
 ```
 
-For **plain Neovim**, set `templates_file` in your setup. This example opens the
-preview by default and gives the sidebar a little more room:
+3. Configure the path only after the file exists. For **lazy.nvim or LazyVim**,
+   replace `opts = {}` in the [installation spec](#lazynvim-and-lazyvim) with:
+
+```lua
+opts = {
+  templates_file = vim.fn.stdpath("config") .. "/structured-prompt/prompts.json",
+  sidebar_width = 38,
+  preview = true,
+  field_filetype = "markdown",
+},
+```
+
+For **plain Neovim**, pass the same options to `setup()` in `init.lua`:
 
 ```lua
 require("structured_prompt").setup({
   templates_file = vim.fn.stdpath("config") .. "/structured-prompt/prompts.json",
   sidebar_width = 38,
   preview = true,
+  field_filetype = "markdown",
 })
 ```
 
-For **LazyVim or lazy.nvim**, put those options in the plugin spec's `opts`.
-Save this as `~/.config/nvim/lua/plugins/structured-prompt.lua` in LazyVim:
+Restart Neovim after changing the plugin options. Edit the personal JSON file
+to add prompts or fields, save it, and run `:StructuredPromptReload` to pick up
+subsequent JSON edits without restarting. Remove `templates_file` to use the
+bundled catalog again.
 
-```lua
-return {
-  "jkieley/neovim-structured-prompt-wizard",
-  name = "structured-prompt.nvim",
-  main = "structured_prompt",
-  cmd = {
-    "StructuredPrompt",
-    "StructuredPromptBuffer",
-    "StructuredPromptApply",
-    "StructuredPromptToggle",
-    "StructuredPromptReload",
-  },
-  keys = {
-    { "<leader>ap", "<cmd>StructuredPrompt<cr>", desc = "Structured prompt" },
-    { "<leader>aB", "<cmd>StructuredPromptBuffer<cr>", desc = "Build prompt for buffer" },
-    { "<leader>aP", "<cmd>StructuredPromptReload<cr>", desc = "Reload prompt templates" },
-  },
-  opts = {
-    templates_file = vim.fn.stdpath("config") .. "/structured-prompt/prompts.json",
-    sidebar_width = 38,
-    preview = true,
-  },
-}
-```
+| Option | Default | Purpose |
+| --- | --- | --- |
+| `templates_file` | Bundled `templates/prompts.json` | Load a personal JSON catalog instead |
+| `sidebar_width` | `34` | Sidebar width in columns; minimum `20` |
+| `preview` | `false` | Show the live output preview when the wizard opens |
+| `field_filetype` | `"markdown"` | Filetype used for answer buffers |
+| `keymaps` | [Mappings above](#keys) | Override an action's key or disable it with `false` |
+
+Layout and keymap options also work with the bundled templates: leave
+`templates_file` unset if you only want to change the wizard's appearance or keys.
 
 Ready-to-copy files:
 
