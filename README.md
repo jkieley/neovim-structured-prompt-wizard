@@ -12,9 +12,13 @@ LazyVim, standalone lazy.nvim, and Neovim's built-in package loader.
 
 ## Video walkthrough
 
-[![▶ Play the pi → Neovim → pi walkthrough on YouTube](artifacts/pi-demo/youtube-preview.jpg)](https://www.youtube.com/watch?v=JVMYZFYO_FA)
+[![▶ Watch the native 4K pi → Neovim → pi walkthrough](artifacts/pi-demo/04-fields.png)](https://www.youtube.com/watch?v=YR5puYbCRXE)
 
-**[Watch the 1:24 pi → Neovim → pi walkthrough directly on YouTube](https://www.youtube.com/watch?v=JVMYZFYO_FA)**
+**[Watch the 1:24 pi → Neovim → pi walkthrough in 4K on YouTube](https://www.youtube.com/watch?v=YR5puYbCRXE)**
+
+Choose **Settings → Quality → 2160p (4K)** in the YouTube player for sharp terminal
+text. YouTube's Auto setting may select a lower resolution. The terminal glyphs
+and captions were drawn directly at **3840×2160, 30 fps** for this recording.
 
 GitHub sanitizes YouTube iframe embeds in README files, so the preview above is a
 clickable thumbnail that opens the published video. It shows a real pi terminal
