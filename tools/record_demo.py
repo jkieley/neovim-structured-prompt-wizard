@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render a real, isolated Neovim UI session to a captioned MP4.
+"""Render a real, isolated Neovim UI session to a native 4K captioned MP4.
 
 Dependencies: Neovim, ffmpeg, Pillow, msgpack. No desktop capture or user config.
 Protocol: https://neovim.io/doc/user/api-ui-events/
@@ -22,9 +22,10 @@ OUT = ROOT / "artifacts" / "demo"
 FRAMES = OUT / "frames"
 FRAMES.mkdir(parents=True, exist_ok=True)
 COLS, ROWS = 124, 28
-CW, CH = 14, 29
-X, Y = 92, 113
-WIDTH, HEIGHT = 1920, 1080
+# Draw glyphs and every UI element at the final resolution. No frame upscaling.
+CW, CH = 28, 58
+X, Y = 184, 226
+WIDTH, HEIGHT = 3840, 2160
 
 
 class Neovim:
@@ -141,10 +142,10 @@ def rgb(value):
 
 mono_path = os.environ.get("DEMO_MONO_FONT", "/System/Library/Fonts/Menlo.ttc")
 sans_path = os.environ.get("DEMO_SANS_FONT", "/System/Library/Fonts/Supplemental/Arial.ttf")
-mono = ImageFont.truetype(mono_path, 22)
-sans = ImageFont.truetype(sans_path, 28)
-small = ImageFont.truetype(sans_path, 22)
-heading = ImageFont.truetype(sans_path, 34)
+mono = ImageFont.truetype(mono_path, 44)
+sans = ImageFont.truetype(sans_path, 56)
+small = ImageFont.truetype(sans_path, 44)
+heading = ImageFont.truetype(sans_path, 68)
 
 
 class Recording:
@@ -169,10 +170,10 @@ class Recording:
     def frame(self, duration=0.12, still=None):
         image = Image.new("RGB", (WIDTH, HEIGHT), "#0b101b")
         draw = ImageDraw.Draw(image)
-        draw.rounded_rectangle((72, 98, 1848, 940), radius=14, fill="#1c2333", outline="#344159", width=2)
-        draw.text((92, 29), "STRUCTURED PROMPT WIZARD", font=heading, fill="#e6edf7")
+        draw.rounded_rectangle((144, 196, 3696, 1880), radius=28, fill="#1c2333", outline="#344159", width=4)
+        draw.text((184, 58), "STRUCTURED PROMPT WIZARD", font=heading, fill="#e6edf7")
         label = self.label
-        draw.text((1828 - draw.textlength(label, font=small), 40), label, font=small, fill="#91a2bc")
+        draw.text((3656 - draw.textlength(label, font=small), 80), label, font=small, fill="#91a2bc")
         for row, line in enumerate(self.nvim.grid):
             for col, (text, attr_id) in enumerate(line):
                 attr = self.nvim.hl.get(attr_id, {})
@@ -183,23 +184,23 @@ class Recording:
                 x, y = X + col * CW, Y + row * CH
                 draw.rectangle((x, y, x + CW - 1, y + CH - 1), fill=bg)
                 if text.strip():
-                    draw.text((x, y + 2), text, font=mono, fill=fg, stroke_width=0)
+                    draw.text((x, y + 4), text, font=mono, fill=fg, stroke_width=0)
                 if attr.get("underline"):
-                    draw.line((x, y + CH - 3, x + CW, y + CH - 3), fill=fg)
+                    draw.line((x, y + CH - 6, x + CW, y + CH - 6), fill=fg, width=2)
         row, col = self.nvim.cursor
         x, y = X + col * CW, Y + row * CH
         if not getattr(self.nvim, "cursor_visible", True):
             pass
         elif self.nvim.mode.startswith("insert"):
-            draw.rectangle((x, y + 2, x + 2, y + CH - 2), fill="#7fe0c2")
+            draw.rectangle((x, y + 4, x + 4, y + CH - 4), fill="#7fe0c2")
         else:
-            draw.rectangle((x, y + 1, x + CW - 1, y + CH - 2), outline="#7fe0c2", width=2)
-        draw.text((92, 960), self.title, font=sans, fill="#7fe0c2")
-        draw.text((92, 1004), self.caption, font=small, fill="#c8d3e5")
+            draw.rectangle((x, y + 2, x + CW - 1, y + CH - 4), outline="#7fe0c2", width=4)
+        draw.text((184, 1920), self.title, font=sans, fill="#7fe0c2")
+        draw.text((184, 2008), self.caption, font=small, fill="#c8d3e5")
         if self.key:
-            kw = draw.textlength(self.key, font=mono) + 40
-            draw.rounded_rectangle((1828 - kw, 955, 1828, 996), radius=8, fill="#213e43")
-            draw.text((1848 - kw, 962), self.key, font=mono, fill="#a9f5da")
+            kw = draw.textlength(self.key, font=mono) + 80
+            draw.rounded_rectangle((3656 - kw, 1910, 3656, 1992), radius=16, fill="#213e43")
+            draw.text((3696 - kw, 1924), self.key, font=mono, fill="#a9f5da")
         path = self.frame_dir / f"{len(self.frames):04d}.png"
         image.save(path)
         self.frames.append((path, duration))
@@ -226,8 +227,12 @@ class Recording:
         (self.output / "chapters.json").write_text(json.dumps(self.chapters, indent=2) + "\n")
         subprocess.run([
             "ffmpeg", "-hide_banner", "-loglevel", "warning", "-y", "-safe", "0",
-            "-i", str(manifest), "-r", "30", "-c:v", "libx264", "-crf", "18",
-            "-preset", "medium", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
+            "-i", str(manifest), "-r", "30", "-fps_mode", "cfr",
+            "-vf", "scale=in_range=full:out_range=limited:out_color_matrix=bt709",
+            "-c:v", "libx264", "-crf", "14", "-preset", "slow", "-tune", "stillimage",
+            "-profile:v", "high", "-pix_fmt", "yuv420p", "-g", "60",
+            "-color_range", "tv", "-colorspace", "bt709", "-color_trc", "bt709",
+            "-color_primaries", "bt709", "-movflags", "+faststart",
             str(self.output / self.filename),
         ], check=True)
         print(f"Saved {self.elapsed:.1f}s demo to {self.output / self.filename}", flush=True)

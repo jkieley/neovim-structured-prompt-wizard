@@ -1,12 +1,16 @@
 # pi → Neovim → structured prompt → pi
 
-The new 1:24 demonstration records an actual pi terminal session and the Neovim
+The 1:24 4K demonstration records an actual pi terminal session and the Neovim
 process launched by its external editor. Scripted keystrokes drive the real apps;
-the captured terminal cells are rendered as a 1920×1080 H.264 video with captions.
+the captured terminal cells and captions are drawn directly at **3840×2160**,
+then encoded as **H.264 at 30 fps**. The renderer uses 44-pixel terminal text and
+CRF 14 encoding to preserve the glyph edges through YouTube's transcode.
 The final response comes from an actual model submission in pi.
 
-[Watch the 1:24 video on YouTube](https://youtu.be/JVMYZFYO_FA) (unlisted).
-The generated local video is `structured-prompt-pi-demo.mp4` in this directory.
+[Watch the 1:24 video in 4K on YouTube](https://youtu.be/YR5puYbCRXE) (unlisted).
+In YouTube, choose **Settings → Quality → 2160p (4K)**; Auto may select 360p
+even when the 4K stream is available.
+The generated local video is `structured-prompt-pi-demo-4k.mp4` in this directory.
 Video and frame caches are excluded from Git.
 
 | Time | Action |
@@ -26,7 +30,9 @@ Video and frame caches are excluded from Git.
 The [saved prompt](example-prompt.md) was checked against all three field values
 after Neovim exited. The recorder also verifies that pi receives the text,
 that selecting a template hides the catalog, and that a model response finishes.
-The video was inspected at the key stages and decoded end to end with ffmpeg.
+The encoded video was inspected at the key stages and decoded end to end with
+ffmpeg. `ffprobe` confirmed 3840×2160, 30 fps, and a duration of 84.07 seconds.
+The eight screenshots in this directory are also native 4K.
 
 ## Reproduce
 

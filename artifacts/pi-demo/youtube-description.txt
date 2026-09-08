@@ -1,4 +1,7 @@
-Build a structured prompt in Neovim, directly from pi's external editor.
+Build a structured prompt in Neovim, directly from pi's external editor — in 4K.
+
+For sharp terminal text, select Settings → Quality → 2160p (4K).
+YouTube's Auto setting may choose a lower resolution.
 
 An actual pi session opens Neovim with Ctrl+G. The structured-prompt.nvim wizard
 offers twelve configurable templates, hides the catalog after selection, and
@@ -6,7 +9,7 @@ provides multiline Vim buffers for each answer. Apply returns the full Markdown
 prompt to pi's original editor file. Save with :wq, then press Enter in pi to
 submit it. The final model response is real.
 
-Source and LazyVim installation:
+Source and LazyVim / lazy.nvim installation:
 https://github.com/jkieley/neovim-structured-prompt-wizard
 
 0:00 Start in pi and open Neovim
@@ -26,4 +29,6 @@ Structured Prompt Author skill for researching and adding templates.
 Earlier JSON configuration walkthrough: https://youtu.be/2tpgUYRdvzc
 
 Recorded using an isolated real tmux terminal with scripted keystrokes. Captions
-and terminal cells are rendered at 1080p. pi 0.80.6; Neovim 0.12.2.
+and terminal glyphs are drawn natively at 3840×2160 and encoded at 30 fps, with
+H.264 CRF 14. This is a new recording; the original 1080p frames were not enlarged.
+pi 0.80.6; Neovim 0.12.2.

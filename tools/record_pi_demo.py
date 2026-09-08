@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Record an actual pi -> Neovim -> pi round trip through an isolated tmux TTY.
+"""Record an actual pi -> Neovim -> pi round trip as a native 4K video.
 
 Requires pi, tmux, nvim, ffmpeg and requirements-demo.txt. Uses the existing pi
 login, sends one benign prompt to the selected model, and saves no pi session.
@@ -137,7 +137,7 @@ class Terminal:
 
 class TerminalRecording(Recording):
     def __init__(self, terminal):
-        super().__init__(terminal, "Actual pi + Neovim TTY  /  scripted keys", OUT, "structured-prompt-pi-demo.mp4")
+        super().__init__(terminal, "Native 4K  /  actual pi + Neovim TTY", OUT, "structured-prompt-pi-demo-4k.mp4")
 
     def frame(self, duration=0.12, still=None):
         self.nvim.capture()

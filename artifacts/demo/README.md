@@ -40,6 +40,9 @@ python3 -m venv /tmp/structured-prompt-video-venv
 
 Neovim and ffmpeg must be on PATH. The renderer defaults to macOS Menlo and
 Arial fonts; override `DEMO_MONO_FONT` and `DEMO_SANS_FONT` on other systems.
+The shared renderer now generates native 3840×2160 video at 30 fps. The published
+JSON walkthrough above is the earlier 1080p recording; the
+[pi round-trip walkthrough](../pi-demo/README.md) is available in 4K.
 Regeneration resets the demo catalog from the bundled catalog and reapplies the
 scripted additions. It does not change the bundled catalog or the YouTube upload.
 
