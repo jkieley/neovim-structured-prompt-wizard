@@ -251,6 +251,7 @@ class Recording:
 def main():
     catalog_path = OUT / "catalog.json"
     catalog = json.loads((ROOT / "templates/prompts.json").read_text())
+    template_count = len(catalog["templates"])
     catalog["$schema"] = "../../templates/schema.json"
     catalog_path.write_text(json.dumps(catalog, indent=2) + "\n")
     (OUT / "config.lua").write_text(
@@ -266,7 +267,7 @@ def main():
     nvim.call("nvim_command", "luafile artifacts/demo/config.lua")
     recording = Recording(nvim)
     try:
-        recording.section("01  Twelve templates, ready to fill", "Writing, coding, research, evidence, extraction, and decisions in one sidebar.", ":StructuredPrompt")
+        recording.section(f"01  {template_count} templates, ready to fill", "Writing, coding, research, evidence, extraction, and decisions in one sidebar.", ":StructuredPrompt")
         recording.frame(1)
         recording.command("StructuredPrompt", 4)
         assert "STRUCTURED PROMPT" in nvim.screen_text()
@@ -277,7 +278,7 @@ def main():
         recording.keys("3j", 2)
         recording.keys("<CR>", 2.2)
         recording.keys("i", 0.4)
-        recording.type("We built a structured prompt wizard for Neovim.\nIt now loads twelve templates from JSON.", 0.045)
+        recording.type(f"We built a structured prompt wizard for Neovim.\nIt now loads {template_count} templates from JSON.", 0.045)
         recording.keys("<Esc>", 1.8)
 
         recording.section("03  Multiline answers, familiar Vim keys", "Each field has its own buffer. ]f moves forward; [f goes back.", "]f  /  [f")

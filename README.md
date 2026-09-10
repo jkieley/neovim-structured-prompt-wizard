@@ -284,8 +284,9 @@ Templates and fields are loaded from [templates/prompts.json](templates/prompts.
 Edit JSON to add, reorder, or revise them; no Lua changes are needed. Run
 `:StructuredPrompt code` to go directly to a template; command completion lists IDs.
 
-The bundled catalog includes the original general task, code change, and review
-briefs, plus nine researched templates:
+The bundled catalog contains **18 templates**: the original general task, code
+change, and review briefs, nine earlier researched templates, and six additions
+adapted from official Anthropic and OpenAI guidance.
 
 | ID | Template |
 | --- | --- |
@@ -301,9 +302,31 @@ briefs, plus nine researched templates:
 | `implementation_plan` | Plan an implementation |
 | `critique_revision` | Critique and revise |
 | `research_brief` | Research a topic |
+| `document_synthesis` | Synthesize documents (Anthropic guidance) |
+| `ticket_triage` | Triage support tickets (Anthropic guidance) |
+| `support_reply` | Draft a support reply (Anthropic guidance) |
+| `assistant_instructions` | Assistant instruction brief (OpenAI guidance) |
+| `frontend_build` | Build a frontend (OpenAI guidance) |
+| `compare_responses` | Compare model responses (OpenAI guidance) |
 
 See [source notes and limitations](templates/SOURCES.md). These are original
-adaptations of documented methods, not claims of universal model performance.
+adaptations of documented methods, not vendor-authored or endorsed prompts or
+claims of universal model performance. Each researched entry records its primary
+sources in the JSON catalog; source metadata is excluded from the assembled prompt.
+
+For example, run `:StructuredPrompt document_synthesis` to combine labeled
+documents into a brief, or `:StructuredPrompt compare_responses` to evaluate two
+answers against your rubric. The comparison gives each answer its own multiline
+field. `assistant_instructions` drafts a reusable assistant prompt; it does not
+execute the task described inside that prompt.
+
+After updating the plugin with `:Lazy update structured-prompt.nvim`, run
+`:StructuredPromptReload` to load the new bundled entries in an existing session.
+If you use `templates_file`, copy the entries you want from
+[templates/prompts.json](templates/prompts.json) into your personal JSON catalog,
+then reload. If you supply Lua `templates`, add the desired definitions to that
+table and restart Neovim, or call `setup()` again with the updated table. Custom
+catalogs replace the bundled list; personal files are not changed automatically.
 
 ### Use a personal JSON catalog
 
